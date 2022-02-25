@@ -163,12 +163,15 @@ class Monitor(object):
         self.serial_reader.start()
         self.gdb_helper.gdb_exit = False
         self.start_cmd_sent = False
+        print("starting loop", self.serial.dtr)
+        self.serial.setDTR(False)
+        time.sleep(0.1)
+        self.serial.setDTR(False)
         try:
             while self.console_reader.alive and self.serial_reader.alive:
                 try:
                     if self.gdb_helper.gdb_exit:
                         self.gdb_helper.gdb_exit = False
-
                         time.sleep(0.3)
                         try:
                             # Continue the program after exit from the GDB
@@ -224,10 +227,13 @@ class Monitor(object):
                         pass  # this can happen if a non-ascii character was passed, ignoring
         except SerialStopException:
             normal_print('Stopping condition has been received\n')
+            self.serial.setDTR(False)
         except KeyboardInterrupt:
+            self.serial.setDTR(False)
             pass
         finally:
             try:
+                self.serial.setDTR(False)
                 self.console_reader.stop()
                 self.serial_reader.stop()
                 self.logger.stop_logging()
@@ -366,6 +372,7 @@ class Monitor(object):
 
         high = False
         low = True
+        
 
         if cmd == CMD_STOP:
             self.console_reader.stop()
@@ -373,6 +380,7 @@ class Monitor(object):
         elif cmd == CMD_RESET:
             self.serial.setRTS(low)
             self.serial.setDTR(self.serial.dtr)  # usbser.sys workaround
+            # self.serial.setDTR(self.serial.dtr)  # usbser.sys workaround
             time.sleep(reset_delay)
             self.serial.setRTS(high)
             self.serial.setDTR(self.serial.dtr)  # usbser.sys workaround

@@ -143,12 +143,25 @@ BUILD_DIR_BASE := $(abspath $(BUILD_DIR_BASE))
 
 export BUILD_DIR_BASE
 
+COMPILE_ONLY_SDK := $(filter only-sdk ,$(MAKECMDGOALS))
+
+
+only-sdk : sdk app
+sdk :
+	@echo "Building only SDK"
+ifeq ($(COMPILE_ONLY_SDK),only-sdk)
+	@echo $(COMPILE_ONLY_SDK)
+endif
 # Component directories. These directories are searched for components (either the directory is a component,
 # or the directory contains subdirectories which are components.)
 # The project Makefile can override these component dirs, or add extras via EXTRA_COMPONENT_DIRS
 ifndef COMPONENT_DIRS
 EXTRA_COMPONENT_DIRS ?=
+ifeq ($(COMPILE_ONLY_SDK),only-sdk)
+COMPONENT_DIRS := $(EXTRA_COMPONENT_DIRS) $(IDF_PATH)/components
+else
 COMPONENT_DIRS := $(PROJECT_PATH)/components $(EXTRA_COMPONENT_DIRS) $(IDF_PATH)/components $(PROJECT_PATH)/main
+endif
 endif
 # Make sure that every directory in the list is an absolute path without trailing slash.
 # This is necessary to split COMPONENT_DIRS into SINGLE_COMPONENT_DIRS and MULTI_COMPONENT_DIRS below.
@@ -546,8 +559,12 @@ APP_ELF:=$(BUILD_DIR_BASE)/$(PROJECT_NAME).elf
 APP_MAP:=$(APP_ELF:.elf=.map)
 APP_BIN:=$(APP_ELF:.elf=.bin)
 
+
 # include linker script generation utils makefile
+ifeq ($(COMPILE_ONLY_SDK),only-sdk)
+else
 include $(IDF_PATH)/make/ldgen.mk
+endif
 
 $(eval $(call ldgen_create_commands))
 
@@ -581,6 +598,8 @@ SECURE_APPS_SIGNING_SCHEME = "2"
 endif
 
 app: $(APP_BIN) partition_table_get_info
+	@echo "BUILDING APP"
+	@echo $(COMPILE_ONLY_SDK)
 ifeq ("$(CONFIG_APP_BUILD_GENERATE_BINARIES)","y")
 ifeq ("$(CONFIG_SECURE_BOOT)$(CONFIG_SECURE_BOOT_BUILD_SIGNED_BINARIES)","y") # secure boot enabled, but remote sign app image
 	@echo "App built but not signed. Signing step via espsecure.py:"

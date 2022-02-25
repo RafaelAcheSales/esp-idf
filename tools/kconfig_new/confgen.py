@@ -305,6 +305,7 @@ def main():
         try:
             deprecated_options.replace(sdkconfig_in=args.config, sdkconfig_out=temp_file)
             config.load_config(temp_file, replace=False)
+            print("second")
             update_if_changed(temp_file, args.config)
         finally:
             try:
@@ -324,6 +325,7 @@ def main():
         try:
             output_function = OUTPUT_FORMATS[output_type]
             output_function(deprecated_options, config, temp_file)
+            print(' first')
             update_if_changed(temp_file, filename)
         finally:
             try:
@@ -605,6 +607,8 @@ def write_docs(deprecated_options, config, filename):
 
 
 def update_if_changed(source, destination):
+    # source = destination
+    print(source + " -> " + destination)
     with open(source, 'r') as f:
         source_contents = f.read()
 
@@ -612,6 +616,7 @@ def update_if_changed(source, destination):
         with open(destination, 'r') as f:
             dest_contents = f.read()
         if source_contents == dest_contents:
+            print("No change needed")
             return  # nothing to update
 
     with open(destination, 'w') as f:

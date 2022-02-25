@@ -79,8 +79,18 @@ prepare_kconfig_files:
 		--env "COMPONENT_KCONFIGS_SOURCE_FILE=$(COMPONENT_KCONFIGS_SOURCE_FILE)" \
 		--env "COMPONENT_KCONFIGS_PROJBUILD_SOURCE_FILE=$(COMPONENT_KCONFIGS_PROJBUILD_SOURCE_FILE)"
 
+# COMPILE_ONLY_SDK := $(filter only-sdk ,$(MAKECMDGOALS))
+ifeq ($(COMPILE_ONLY_SDK),only-sdk)
+OUTPUT_SDKCONFIG :=
+OUTPUT_HEADER := --output header $(BUILD_DIR_BASE)/include/sdkconfig.h
+else
+OUTPUT_SDKCONFIG := --output config ${SDKCONFIG}
+OUTPUT_HEADER := --output header $(BUILD_DIR_BASE)/include/sdkconfig.h
+endif
+OUTPUT_MAKEFILE := --output makefile $(SDKCONFIG_MAKEFILE)
 # macro for running confgen.py
 define RunConfGen
+	@echo "Running confgen.py"
 	mkdir -p $(BUILD_DIR_BASE)/include/config
 	$(PYTHON) $(IDF_PATH)/tools/kconfig_new/confgen.py \
 		--kconfig $(IDF_PATH)/Kconfig \
@@ -94,9 +104,9 @@ define RunConfGen
 		--env "IDF_CMAKE=n" \
 		--env "IDF_ENV_FPGA=n" \
 		$(DEFAULTS_ARG) \
-		--output config ${SDKCONFIG} \
-		--output makefile $(SDKCONFIG_MAKEFILE) \
-		--output header $(BUILD_DIR_BASE)/include/sdkconfig.h \
+		${OUTPUT_SDKCONFIG} \
+		$(OUTPUT_MAKEFILE) \
+		$(OUTPUT_HEADER) \
 		$1
 endef
 

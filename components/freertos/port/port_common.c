@@ -26,6 +26,7 @@
 #include "esp_log.h"
 #include "soc/dport_access.h"
 #include "sdkconfig.h"
+// #include "main_weak.h"
 
 #if CONFIG_IDF_TARGET_ESP32
 #include "esp32/spiram.h"
