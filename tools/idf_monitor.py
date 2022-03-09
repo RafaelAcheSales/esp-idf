@@ -164,9 +164,9 @@ class Monitor(object):
         self.gdb_helper.gdb_exit = False
         self.start_cmd_sent = False
         print("starting loop", self.serial.dtr)
-        self.serial.setDTR(False)
+        self.serial.setDTR(True)
         time.sleep(0.1)
-        self.serial.setDTR(False)
+        self.serial.setDTR(True)
         try:
             while self.console_reader.alive and self.serial_reader.alive:
                 try:
